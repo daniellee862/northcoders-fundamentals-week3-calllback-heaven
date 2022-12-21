@@ -66,44 +66,33 @@ function fetchAllCats(callback) {
   });
 }
 
-// #### `fetchOwnersWithCats()`
-
-// - this function should take a callback function as its only argument
-// - this function should make use of `fetchAllOwners` and `fetchCatsByOwner` in order to build an
-//   array of objects, each with an `owner` and `cats` key.
-// - the order of the objects is critical, and must be preserved - however, sorting is incredibly inefficient. Maintain the correct order without sorting
-// - you get the drill by now, but you must pass the array of cats and owners to the callback function
-
-// fetchAllOwners = ['Pavlov', 'Schrodinger', 'Foucault', 'Vel', 'Calvin'];
-
-// fetchCatsByOwner = {
-//   schrodinger: ['Leben', 'Tot'],
-//   pavlov: ['Belle', 'Dribbles', 'Nibbles'],
-//   foucault: ['M. Fang'],
-//   vel: ['Opal'],
-//   calvin: ['Hobbes']
-// };
-
 function fetchOwnersWithCats(callback) {
   let ownerANDCatObjectArray = [];
-
   let count = 0;
   fetchAllOwners((err, ownersList) => {
-    if (err) callback(err);
-    for (let i = 0; i < ownersList.length; i++) {
-      fetchCatsByOwner(ownersList[i], (err, cats) => {
-        ownerANDCatObjectArray[i] = { owner: ownersList[i], cats: cats };
+    err && callback(err);
+    ownersList.forEach((owner, index) => {
+      fetchCatsByOwner(ownersList[index], (err, cats) => {
+        err && callback(err);
+        ownerANDCatObjectArray[index] = { owner: ownersList[index], cats: cats };
         count++;
         if (count === ownersList.length) {
           console.log(ownerANDCatObjectArray);
           callback(null, ownerANDCatObjectArray);
         }
       });
-    }
+    });
   });
 }
 
-function kickLegacyServerUntilItWorks() {}
+function kickLegacyServerUntilItWorks(callback) {
+  request('/legacy-status', (err, response) => {
+    err && callback(err);
+    response === '200 - the legacy server is up'
+      ? callback(null, response)
+      : callback(null, kickLegacyServerUntilItWorks(callback));
+  });
+}
 
 function buySingleOutfit() {}
 

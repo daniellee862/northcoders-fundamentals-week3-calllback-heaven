@@ -1,85 +1,70 @@
 const request = require('../utils/server');
 
-
-
-
-
 function checkServerStatus(callback) {
-  request("/status", callback)
+  request('/status', callback);
 }
-
-
-
 
 function fetchBannerContent(callback) {
-  request("/banner", (err, content) => {
-    const banner = { ...content }
-    banner.copyrightYear = 2022
-    callback(null, banner)
-  })
+  request('/banner', (err, content) => {
+    const banner = { ...content };
+    banner.copyrightYear = 2022;
+    callback(null, banner);
+  });
 }
-
-
 
 function fetchAllOwners(callback) {
-  request("/owners", (err, content) => {
-    const updatedList = content.map((owner) => {
-      return owner.toLowerCase()
-    })
+  request('/owners', (err, content) => {
+    const updatedList = content.map(owner => {
+      return owner.toLowerCase();
+    });
 
-    callback(null, updatedList)
-  })
+    callback(null, updatedList);
+  });
 }
-
 
 function fetchCatsByOwner(owner, callback) {
   request(`/owners/${owner}/cats`, (err, content) => {
-    if (err) callback(err)
+    if (err) callback(err);
     else {
-      callback(err, content)
+      callback(err, content);
     }
-
-  })
+  });
 }
 
 function fetchCatPics(arr, callback) {
-  let updatedCatPics = []
+  let updatedCatPics = [];
   if (arr.length === 0) {
-    callback(null)
+    callback(null);
   }
   for (let i = 0; i < arr.length; i++) {
     request(`/pics/${arr[i]}`, (err, responses) => {
       if (err) {
-        updatedCatPics.push("placeholder.jpg")
+        updatedCatPics.push('placeholder.jpg');
       } else {
-        updatedCatPics.push(responses)
+        updatedCatPics.push(responses);
       }
-      if (updatedCatPics.length === arr.length) callback(null, updatedCatPics)
-    })
+      if (updatedCatPics.length === arr.length) callback(null, updatedCatPics);
+    });
   }
 }
 
-
-
-
 function fetchAllCats(callback) {
-  let allCatsArr = []
-   
+  let allCatsArr = [];
+
   fetchAllOwners((err, owners) => {
-    if(err) callback(err);
+    if (err) callback(err);
     for (let i = 0; i < owners.length; i++) {
       fetchCatsByOwner(owners[i], (err, cats) => {
-        if(err) callback(err);
-        allCatsArr.push(cats)
+        if (err) callback(err);
+        allCatsArr.push(cats);
         if (allCatsArr.length === owners.length) {
-          const sortedFlatArr = allCatsArr.flat().sort()
-          callback(err, sortedFlatArr)
+          const sortedFlatArr = allCatsArr.flat().sort();
+          callback(err, sortedFlatArr);
         }
-      })
+      });
     }
-  })
+  });
 }
-
 
 // #### `fetchOwnersWithCats()`
 
@@ -99,20 +84,28 @@ function fetchAllCats(callback) {
 //   calvin: ['Hobbes']
 // };
 
-function fetchOwnersWithCats() { 
-  let allCatsObj = []
-   
-  fetchAllOwners((err, owners) => {
-    if(err) callback(err);
-    for (let i = 0; i < owners.length; i++) {
+function fetchOwnersWithCats(callback) {
+  let ownerANDCatObjectArray = [];
 
+  let count = 0;
+  fetchAllOwners((err, ownersList) => {
+    if (err) callback(err);
+    for (let i = 0; i < ownersList.length; i++) {
+      fetchCatsByOwner(ownersList[i], (err, cats) => {
+        ownerANDCatObjectArray[i] = { owner: ownersList[i], cats: cats };
+        count++;
+        if (count === ownersList.length) {
+          console.log(ownerANDCatObjectArray);
+          callback(null, ownerANDCatObjectArray);
+        }
+      });
     }
-  })
+  });
 }
 
-function kickLegacyServerUntilItWorks() { }
+function kickLegacyServerUntilItWorks() {}
 
-function buySingleOutfit() { }
+function buySingleOutfit() {}
 
 module.exports = {
   buySingleOutfit,
